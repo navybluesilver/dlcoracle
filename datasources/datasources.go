@@ -17,8 +17,8 @@ type Ticker struct {
 	Value uint64
 }
 
-var allSpot = getAllSpot()
-var allFuture = getAllFuture()
+var allSpot []Ticker
+var allFuture []Ticker
 
 func GetAllDatasources() []Datasource {
 	var datasources []Datasource

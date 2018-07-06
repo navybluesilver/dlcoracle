@@ -34,6 +34,7 @@ func future(underlying string, future string) (uint64, error) {
 
 func getAllFuture() ([]Ticker) {
 	var t []Ticker
+
 	req, err := http.NewRequest("GET", "https://www.bitmex.com/api/v1/instrument/active", nil)
 	if err != nil {
 		logging.Error.Printf("Future.getAllFuture - NewRequest \n", err)
@@ -69,13 +70,11 @@ func convertSymbolTicker(r BitmexResponse) (Ticker) {
 			name = "USDU18"
 			satoshiValue = uint64(math.Floor(((1/r.LastPrice)*100000000)+0.5)) * 1
 	}
+	
 	if name == "XBTZ18" {
 			name = "USDZ18"
 			satoshiValue = uint64(math.Floor(((1/r.LastPrice)*100000000)+0.5)) * 1
 	}
 
 	return Ticker{Name: name, Value: satoshiValue}
-
-/*
-*/
 }

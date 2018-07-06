@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"time"
+	"fmt"
 
 	"github.com/gertjaap/dlcoracle/datasources"
 
@@ -28,11 +29,11 @@ func Init() {
 
 func Process() error {
 	timeNow := uint64(time.Now().Unix())
-	for time := lastPublished + 1; time <= timeNow; time++ {
+	for t := lastPublished + 1; t <= timeNow; t++ {
 		for _, ds := range datasources.GetAllDatasources() {
-			if time%ds.Interval() == 0 {
+			if t%ds.Interval() == 0 {
 
-				logging.Info.Printf("Publishing data source %d [ts: %d]\n", ds.Id(), time)
+				logging.Info.Printf("Publishing data source %d [ts: %d]\n", ds.Id(), t)
 
 				valueToPublish, err := ds.Value()
 				if err != nil {
@@ -43,15 +44,15 @@ func Process() error {
 				var a [32]byte
 				copy(a[:], crypto.RetrieveKey(crypto.KeyTypeA)[:])
 
-				k, err := store.GetK(ds.Id(), time)
+				k, err := store.GetK(ds.Id(), t)
 				if err != nil {
-					logging.Error.Printf("Could not get signing key for data source %d and timestamp %d : %s", ds.Id(), time, err.Error())
+					logging.Error.Printf("Could not get signing key for data source %d and timestamp %d : %s", ds.Id(), t, err.Error())
 					continue
 				}
 
-				R, err := store.GetRPoint(ds.Id(), time)
+				R, err := store.GetRPoint(ds.Id(), t)
 				if err != nil {
-					logging.Error.Printf("Could not get pubkey for data source %d and timestamp %d : %s", ds.Id(), time, err.Error())
+					logging.Error.Printf("Could not get pubkey for data source %d and timestamp %d : %s", ds.Id(), t, err.Error())
 					continue
 				}
 
@@ -62,7 +63,7 @@ func Process() error {
 				}
 
 				if publishedAlready {
-					logging.Info.Printf("Already published for data source %d and timestamp %d", ds.Id(), time)
+					logging.Info.Printf("Already published for data source %d and timestamp %d", ds.Id(), t)
 					continue
 				}
 
@@ -82,6 +83,9 @@ func Process() error {
 				store.Publish(R, valueToPublish, signature)
 			}
 		}
+		// Wait so that exchanges don't ban this ip
+		time.Sleep(90000 * time.Millisecond)
+		fmt.Println("done sleeping")
 	}
 
 	lastPublished = timeNow
