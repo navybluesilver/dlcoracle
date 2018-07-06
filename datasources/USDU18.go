@@ -28,5 +28,5 @@ func (ds *USDU18) Interval() uint64 {
 }
 
 func (ds *USDU18) Value() (uint64, error) {
-	return future("XBT","U18")
+	return future("USD","U18")
 }

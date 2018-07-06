@@ -10,38 +10,72 @@ import (
 )
 
 
+type BitmexResponse struct {
+	Symbol												 string	         `json:"symbol"`
+	LastPrice                      float64         `json:"lastPrice"`
+}
+
+type AllBitmexResponse []struct {
+	Symbol												 string	         `json:"symbol"`
+	LastPrice                      float64         `json:"lastPrice"`
+}
+
+
 func future(underlying string, future string) (uint64, error) {
-	ticker := fmt.Sprintf("%s%s", underlying, future)
-	req, err := http.NewRequest("GET", fmt.Sprintf("https://www.bitmex.com/api/v1/instrument?symbol=%s&count=100&reverse=false",ticker), nil)
+	name := fmt.Sprintf("%s%s", underlying, future)
+	for _, t := range allFuture {
+		if t.Name == name {
+			return t.Value, nil
+		}
+	}
+	fmt.Println(name)
+	return 0, nil
+}
+
+func getAllFuture() ([]Ticker) {
+	var t []Ticker
+	req, err := http.NewRequest("GET", "https://www.bitmex.com/api/v1/instrument/active", nil)
 	if err != nil {
-		logging.Error.Printf("%s.Value - NewRequest \n", ticker, err)
-		return 0, err
+		logging.Error.Printf("Future.getAllFuture - NewRequest \n", err)
 	}
 
 	client := &http.Client{}
 
 	resp, err := client.Do(req)
 	if err != nil {
-		logging.Error.Printf("%s.Value - Do: \n", ticker, err)
-		return 0, err
+		logging.Error.Printf("Future.getAllFuture - Do: \n", err)
 	}
 
 	defer resp.Body.Close()
 
-	var record BitmexLastPriceResponse
+	var futures AllBitmexResponse
 
-	if err := json.NewDecoder(resp.Body).Decode(&record); err != nil {
-		logging.Error.Printf("%s.Value - Json decode failed: \n", ticker, err)
-		return 0, err
+	if err := json.NewDecoder(resp.Body).Decode(&futures); err != nil {
+		logging.Error.Printf("Future.getAllFuture - Json decode failed: \n", err)
 	}
 
-	value := record[0].LastPrice
+	for _, symbol := range futures {
+		f := convertSymbolTicker(symbol)
+		t = append(t, f)
+	}
+	return t
+}
 
-	if underlying == "XBT" {
-			value = 1/value
+func convertSymbolTicker(r BitmexResponse) (Ticker) {
+	satoshiValue := uint64(math.Floor((r.LastPrice*100000000)+0.5)) * 1
+	name := r.Symbol
+
+	if name == "XBTU18" {
+			name = "USDU18"
+			satoshiValue = uint64(math.Floor(((1/r.LastPrice)*100000000)+0.5)) * 1
+	}
+	if name == "XBTZ18" {
+			name = "USDZ18"
+			satoshiValue = uint64(math.Floor(((1/r.LastPrice)*100000000)+0.5)) * 1
 	}
 
+	return Ticker{Name: name, Value: satoshiValue}
 
-	satoshiValue := uint64(math.Floor((value*100000000)+0.5)) * 1
-	return satoshiValue, nil
+/*
+*/
 }

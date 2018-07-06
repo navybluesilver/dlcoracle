@@ -4,14 +4,6 @@ import (
 	"fmt"
 )
 
-type MinApiCryptoCompareBTCResponse struct {
-	Value float64 `json:"BTC"`
-}
-
-type BitmexLastPriceResponse []struct {
-	LastPrice                      float64         `json:"lastPrice"`
-}
-
 type Datasource interface {
 	Id() uint64
 	Name() string
@@ -20,8 +12,18 @@ type Datasource interface {
 	Interval() uint64
 }
 
+type Ticker struct {
+	Name string
+	Value uint64
+}
+
+var allSpot = getAllSpot()
+var allFuture = getAllFuture()
+
 func GetAllDatasources() []Datasource {
 	var datasources []Datasource
+	allSpot = getAllSpot()
+	allFuture = getAllFuture()
 	datasources = append(datasources, &USD{})
 	datasources = append(datasources, &USDU18{})
 	datasources = append(datasources, &USDZ18{})

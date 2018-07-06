@@ -5,6 +5,11 @@ import (
 	"net/http"
 	"os"
 
+	"io/ioutil"
+	"strings"
+	"encoding/hex"
+
+
 	"github.com/gertjaap/dlcoracle/crypto"
 	"github.com/gertjaap/dlcoracle/logging"
 	"github.com/gertjaap/dlcoracle/publisher"
@@ -21,11 +26,27 @@ func main() {
 
 	logging.Info.Println("MIT-DCI Discreet Log Oracle starting...")
 
-	key, err := crypto.ReadKeyFile("data/privkey.hex")
+
+	priv96 := new([96]byte)
+	keyhex, err := ioutil.ReadFile("data/privkey.hex")
 	if err != nil {
-		logging.Error.Fatal("Could not open or create keyfile:", err)
-		os.Exit(1)
+		panic(err)
 	}
+	keyhex = []byte(strings.TrimSpace(string(keyhex)))
+	enckey, err := hex.DecodeString(string(keyhex))
+	if err != nil {
+		panic(err)
+	}
+
+
+	if len(enckey) == 96 { // UNencrypted key, length 32
+		copy(priv96[:], enckey[:])
+  }
+
+	fmt.Printf("%v\n", priv96)	
+
+	key := priv96
+
 	crypto.StoreKeys(key)
 	// Tell memguard to listen out for interrupts, and cleanup in case of one.
 	memguard.CatchInterrupt(func() {
