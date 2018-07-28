@@ -43,8 +43,6 @@ func main() {
 		copy(priv96[:], enckey[:])
   }
 
-	fmt.Printf("%v\n", priv96)	
-
 	key := priv96
 
 	crypto.StoreKeys(key)

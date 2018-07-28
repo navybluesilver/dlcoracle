@@ -41,6 +41,7 @@ func GetAllDatasources() []Datasource {
 	datasources = append(datasources, &TRXU18{})
 	datasources = append(datasources, &XRP{})
 	datasources = append(datasources, &XRPU18{})
+  datasources = append(datasources, &XAU{})
 	return datasources
 }
 
@@ -80,7 +81,8 @@ func GetDatasource(id uint64) (Datasource, error) {
 		return &XRP{}, nil
 	case 17:
 		return &XRPU18{}, nil
-
+	case 18:
+		return &XAU{}, nil
 	default:
 		return nil, fmt.Errorf("Data source with ID %d not known", id)
 	}
@@ -126,7 +128,8 @@ func getId(underlying string) (id uint64, err error) {
 		return 16, nil
 	case "XRPU18":
 		return 17, nil
-
+	case "XAU":
+		return 18, nil
 	default:
 		return 0, fmt.Errorf("Data source with ID %d not known", id)
 	}

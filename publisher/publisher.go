@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/binary"
 	"time"
-	"fmt"
 
 	"github.com/gertjaap/dlcoracle/datasources"
 
@@ -85,7 +84,6 @@ func Process() error {
 		}
 		// Wait so that exchanges don't ban this ip
 		time.Sleep(90000 * time.Millisecond)
-		fmt.Println("done sleeping")
 	}
 
 	lastPublished = timeNow
