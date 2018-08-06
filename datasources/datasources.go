@@ -89,7 +89,7 @@ func GetDatasource(id uint64) (Datasource, error) {
 }
 
 func HasDatasource(id uint64) bool {
-	return (id <= 17)
+	return (id <= 18)
 }
 
 func getId(underlying string) (id uint64, err error) {
